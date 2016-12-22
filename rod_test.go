@@ -2,11 +2,11 @@ package rod
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
-	"strconv"
+	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/boltdb/bolt"
 )
@@ -28,7 +28,13 @@ func check(err error) {
 }
 
 func TestAll(t *testing.T) {
-	filename := "/tmp/rod-" + strconv.Itoa(int(time.Now().UnixNano()))
+	dir, err := ioutil.TempDir("", "rod-")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+
+	filename := filepath.Join(dir, "rod.db")
 	defer os.Remove(filename)
 
 	// Open the database.
