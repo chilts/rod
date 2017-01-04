@@ -1,11 +1,5 @@
 package rod
 
-// Rod is a simple way to put/get values to/from a BoltDB (https://github.com/boltdb/bolt) store. It can deal with
-// deep-bucket hierarchies easily and is therefore a rod straight to the value you want.
-//
-// Whilst this package won't solve all of your problems or use-cases, it does make a few things simple and is used
-// successfully in https://publish.li/ and https://weekproject.com/ and various other applications.
-
 import (
 	"encoding/json"
 	"errors"
