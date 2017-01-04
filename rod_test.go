@@ -64,6 +64,27 @@ func TestAll(t *testing.T) {
 		check(err)
 	})
 
+	t.Run("Simple PutString and GetString", func(t *testing.T) {
+		msg := "Hello, World!"
+
+		err := db.Update(func(tx *bolt.Tx) error {
+			// put this message
+			err := PutString(tx, "strings", "hello-world", msg)
+			check(err)
+
+			// get it back
+			storedMsg, err := GetString(tx, "strings", "hello-world")
+			check(err)
+			if storedMsg != msg {
+				log.Fatalf("Received msg '%s' is not the same as the original '%s'", storedMsg, msg)
+			}
+
+			return nil
+		})
+
+		check(err)
+	})
+
 	t.Run("Simple PutJson and GetJson", func(t *testing.T) {
 		user := User{"chilts", 1}
 
