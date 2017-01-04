@@ -9,7 +9,6 @@ package rod
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/boltdb/bolt"
@@ -191,8 +190,6 @@ func SelAll(tx *bolt.Tx, location string, newItem func() interface{}, append fun
 	// use a cursor to iterate through this bucket
 	c := b.Cursor()
 	for k, v := c.First(); k != nil; k, v = c.Next() {
-		fmt.Printf("%s = %s\n", k, string(v))
-
 		// get a new thing
 		item := newItem()
 		err := json.Unmarshal(v, &item)

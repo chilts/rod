@@ -1,7 +1,6 @@
 package rod
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -106,15 +105,11 @@ func TestAll(t *testing.T) {
 				return Animal{}
 			}, func(v interface{}) {
 				a, notOk := v.(Animal)
-				fmt.Printf("a=%#v\n", a)
-				fmt.Printf("ok=%#v\n", notOk)
 				if notOk {
 					t.Fatal("Thing returned from SelAll is not an Animal")
 				}
 				animals = append(animals, &a)
 			})
-
-			fmt.Printf("animals=%#v\n", animals)
 
 			return err
 		}); err != nil {
