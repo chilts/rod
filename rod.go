@@ -74,12 +74,12 @@ func Put(tx *bolt.Tx, location, key string, value []byte) error {
 	return b.Put([]byte(key), value)
 }
 
-// PutString() converts the string to []byte and calls Put(). Everything that applies there applies here too.
+// PutString converts the string to []byte and calls Put. Everything that applies there applies here too.
 func PutString(tx *bolt.Tx, location, key, value string) error {
 	return Put(tx, location, key, []byte(value))
 }
 
-// PutJson() calls json.Marshal() to serialise the value into []byte and calls rod.Put() with the result.
+// PutJson calls json.Marshal() to serialise the value into []byte and calls rod.Put with the result.
 func PutJson(tx *bolt.Tx, location, key string, v interface{}) error {
 	// now put this value in this key
 	value, err := json.Marshal(v)
@@ -89,7 +89,7 @@ func PutJson(tx *bolt.Tx, location, key string, v interface{}) error {
 	return Put(tx, location, key, value)
 }
 
-// Get() will fetch the raw bytes from the BoltDB. If any bucket doesn't exist it will return nil. If the key doesn't
+// Get will fetch the raw bytes from the BoltDB. If any bucket doesn't exist it will return nil. If the key doesn't
 // exist it will also return nil.
 //
 // Error returned from this function are:
@@ -112,8 +112,8 @@ func Get(tx *bolt.Tx, location, key string) ([]byte, error) {
 	return b.Get([]byte(key)), nil
 }
 
-// GetString() calls rod.Get() and converts the []byte to a string before returning it to you. Everything that applies
-// there applies here too.
+// GetString calls Get and converts the []byte to a string before returning it to you. Everything that applies there
+// applies here too.
 func GetString(tx *bolt.Tx, location, key string) (string, error) {
 	raw, err := Get(tx, location, key)
 	if err != nil {
@@ -122,8 +122,8 @@ func GetString(tx *bolt.Tx, location, key string) (string, error) {
 	return string(raw), nil
 }
 
-// GetJson() calls rod.Get() and then json.Unmarshal() with the result to deserialise the value into interface{}. If
-// any bucket doesn't exist we just return nil with nothing placed into v. The same if the key doesn't exist.
+// GetJson calls Get and then json.Unmarshal() with the result to deserialise the value into interface{}. If any bucket
+// doesn't exist we just return nil with nothing placed into v. The same if the key doesn't exist.
 func GetJson(tx *bolt.Tx, location, key string, v interface{}) error {
 	// get this key
 	raw, err := Get(tx, location, key)
