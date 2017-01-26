@@ -20,6 +20,29 @@ var (
 	ErrKeyNotProvided = errors.New("key must be specified")
 )
 
+// Del will find your bucket location and delete the key specified. It doesn't matter what is in the key's value, since
+// it is ignored during this operation. If the bucket doesn't exist, no error is returned since technically you've
+// already got what you asked for. Similarly, if the key doesn't exist, no error is returned for the same reason.
+func Del(tx *bolt.Tx, location, key string) error {
+	if location == "" {
+		return ErrLocationMustHaveAtLeastOneBucket
+	}
+	if key == "" {
+		return ErrKeyNotProvided
+	}
+
+	b, err := GetBucket(tx, location)
+	if err != nil {
+		return err
+	}
+	if b == nil {
+		return nil
+	}
+
+	// now delete the key
+	return b.Delete([]byte(key))
+}
+
 // Put will find your bucket location and put your value into the key specified. The location is specified as a
 // hierarchy of bucket names such as "users", "users.chilts", or "users.chilts.posts" and will be split on the period
 // for each bucket name.
@@ -139,7 +162,8 @@ func GetJson(tx *bolt.Tx, location, key string, v interface{}) error {
 	return json.Unmarshal(raw, &v)
 }
 
-// GetBucket returns this nested bucket from the store.
+// GetBucket returns this nested bucket from the store. If any bucket along the way does not exist, then no bucket is
+// returned (nil) but not error is returned either.
 func GetBucket(tx *bolt.Tx, location string) (*bolt.Bucket, error) {
 	if location == "" {
 		return nil, ErrLocationMustHaveAtLeastOneBucket
