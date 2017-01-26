@@ -1,4 +1,4 @@
-# rod : helper functions for dealing with your BoltDB transactions
+# rod : helper functions inside BoltDB transactions
 
 ## Overview [![GoDoc](https://godoc.org/github.com/chilts/rod?status.svg)](https://godoc.org/github.com/chilts/rod) [![Build Status](https://travis-ci.org/chilts/rod.svg?branch=master)](https://travis-ci.org/chilts/rod) [![Code Climate](https://codeclimate.com/github/chilts/rod/badges/gpa.svg)](https://codeclimate.com/github/chilts/rod)
 
