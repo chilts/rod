@@ -20,6 +20,11 @@ type User struct {
 	Logins   int
 }
 
+type Car struct {
+	Manufacturer string
+	Model        string
+}
+
 func check(err error) {
 	if err != nil {
 		log.Fatal(err)
@@ -110,7 +115,7 @@ func TestAll(t *testing.T) {
 		check(err)
 	})
 
-	t.Run("SelAll", func(t *testing.T) {
+	t.Run("SelAll (DEPRECATED)", func(t *testing.T) {
 		// Start a read-write transaction.
 		if err := db.Update(func(tx *bolt.Tx) error {
 			dog := Animal{"dog", "rover"}
@@ -131,6 +136,61 @@ func TestAll(t *testing.T) {
 				}
 				animals = append(animals, &a)
 			})
+
+			return err
+		}); err != nil {
+			log.Fatal(err)
+		}
+	})
+
+	t.Run("Sel", func(t *testing.T) {
+		// Start a read-write transaction.
+		if err := db.Update(func(tx *bolt.Tx) error {
+			carBucketName := "car"
+			golf := Car{"Volkswagon", "Golf"}
+			leaf := Car{"Nissan", "Leaf"}
+			hilux := Car{"Toyota", "Hilux"}
+
+			_ = PutJson(tx, carBucketName, "gold", &golf)
+			_ = PutJson(tx, carBucketName, "leaf", &leaf)
+			_ = PutJson(tx, carBucketName, "hilux", &hilux)
+
+			var cars []Car
+			err := All(tx, carBucketName, &cars)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if len(cars) != 3 {
+				t.Fatalf("Three cars should have been returned from Sel(), but instead %d were\n", len(cars))
+			}
+
+			for i, car := range cars {
+				if i == 0 {
+					if car.Manufacturer != golf.Manufacturer {
+						t.Fatal("First car should have been a Volkswagon")
+					}
+					if car.Model != golf.Model {
+						t.Fatal("First car should have been a Golf")
+					}
+				}
+				if i == 1 {
+					if car.Manufacturer != hilux.Manufacturer {
+						t.Fatal("Second car should have been a Toyota")
+					}
+					if car.Model != hilux.Model {
+						t.Fatal("Second car should have been a Hilux")
+					}
+				}
+				if i == 2 {
+					if car.Manufacturer != leaf.Manufacturer {
+						t.Fatal("Third car should have been a Nissan")
+					}
+					if car.Model != leaf.Model {
+						t.Fatal("Third car should have been a Leaf")
+					}
+				}
+			}
 
 			return err
 		}); err != nil {

@@ -3,6 +3,7 @@ package rod
 import (
 	"encoding/json"
 	"errors"
+	"reflect"
 	"strings"
 
 	"github.com/boltdb/bolt"
@@ -18,6 +19,9 @@ var (
 
 	// ErrKeyNotProvided is returned if key was not specified, ie. it is empty.
 	ErrKeyNotProvided = errors.New("key must be specified")
+
+	// ErrSlicePtrNeeded is returned when an unexpected value is given, instead of a pointer to slice.
+	ErrSlicePtrNeeded = errors.New("provided target must be a pointer to slice")
 )
 
 // Del will find your bucket location and delete the key specified. It doesn't matter what is in the key's value, since
@@ -197,9 +201,9 @@ func GetBucket(tx *bolt.Tx, location string) (*bolt.Bucket, error) {
 	return b, nil
 }
 
-// SelAll will give you everything inside the bucket specified by location. The newItem function you pass in will be
-// called for every key in the bucket and should just return an empty instance of your type. Append will also be called
-// for every item once unmarshalling has taken place.
+// SelAll (*** DEPRECATED *** - use All() instead) will give you everything inside the bucket specified by
+// location. The newItem function you pass in will be called for every key in the bucket and should just return an
+// empty instance of your type. Append will also be called for every item once unmarshalling has taken place.
 //
 //   animals := make([]*Animal, 0)
 //   err := SelAll(tx, "animal", func() interface{} {
@@ -233,6 +237,75 @@ func SelAll(tx *bolt.Tx, location string, newItem func() interface{}, append fun
 		// now call the append function
 		append(item)
 	}
+
+	return nil
+}
+
+// All will give you everything inside the bucket specified by location.
+//
+//   var users []User
+//   err := rod.All(tx, "user", &users)
+//
+//   var animals []Animals
+//   err := rod.All(tx, "animal", &animals)
+//
+// This function supercedes SelAll() so use this instead of that.
+func All(tx *bolt.Tx, location string, to interface{}) error {
+	// figure out what slice we have been given
+	ref := reflect.ValueOf(to)
+
+	// check we have not been given a slice (a pointer to a slice in fact)
+	if ref.Kind() != reflect.Ptr || reflect.Indirect(ref).Kind() != reflect.Slice {
+		return ErrSlicePtrNeeded
+	}
+
+	// see what the actual type of this ref is
+	sliceType := reflect.Indirect(ref).Type()
+
+	// and what is the type of each element
+	elemType := sliceType.Elem()
+
+	// check if we actually have a pointer to this type, and if so make sure we use the type itself
+	isPtrWanted := false
+	if elemType.Kind() == reflect.Ptr {
+		isPtrWanted = true
+		elemType = elemType.Elem()
+	}
+
+	// create the container for the results (which actually sets into `ref` and therefore `to`)
+	results := reflect.MakeSlice(reflect.Indirect(ref).Type(), 0, 0)
+
+	// find this bucket
+	b, err := GetBucket(tx, location)
+	if err != nil {
+		return err
+	}
+	if b == nil {
+		return nil
+	}
+
+	// use a cursor to iterate through this bucket
+	c := b.Cursor()
+	for k, v := c.First(); k != nil; k, v = c.Next() {
+		// create a new elemType we want
+		item := reflect.Indirect(reflect.New(elemType))
+
+		// get a new thing
+		err := json.Unmarshal(v, item.Addr().Interface())
+		if err != nil {
+			return err
+		}
+
+		// add to the slice of results
+		if isPtrWanted {
+			results = reflect.Append(results, item.Addr())
+		} else {
+			results = reflect.Append(results, item)
+		}
+	}
+
+	// set these results back into `to` (using the origin `ref` which is `reflect.ValueOf(to)`)
+	reflect.Indirect(ref).Set(results)
 
 	return nil
 }
