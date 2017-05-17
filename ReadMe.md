@@ -41,6 +41,6 @@ For [AppsAttic](https://appsattic.com/), [@AppsAttic](https://twitter.com/AppsAt
 
 ## License ##
 
-MIT.
+[MIT](https://publish.li/mit-qLQqmVTO).
 
 (Ends)
