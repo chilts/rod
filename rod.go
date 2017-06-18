@@ -309,3 +309,26 @@ func All(tx *bolt.Tx, location string, to interface{}) error {
 
 	return nil
 }
+
+// AllKeys will return you a slice of strings of all of the keys in this bucket.
+func AllKeys(tx *bolt.Tx, location string) (error, []string) {
+	// find this bucket
+	b, err := GetBucket(tx, location)
+	if err != nil {
+		return err, nil
+	}
+	if b == nil {
+		return nil, nil
+	}
+
+	// create a slice for the keys
+	keys := make([]string, 0)
+
+	// use a cursor to iterate through this bucket
+	c := b.Cursor()
+	for k, _ := c.First(); k != nil; k, _ = c.Next() {
+		keys = append(keys, string(k))
+	}
+
+	return nil, keys
+}

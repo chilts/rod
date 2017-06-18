@@ -151,7 +151,7 @@ func TestAll(t *testing.T) {
 			leaf := Car{"Nissan", "Leaf"}
 			hilux := Car{"Toyota", "Hilux"}
 
-			_ = PutJson(tx, carBucketName, "gold", &golf)
+			_ = PutJson(tx, carBucketName, "golf", &golf)
 			_ = PutJson(tx, carBucketName, "leaf", &leaf)
 			_ = PutJson(tx, carBucketName, "hilux", &hilux)
 
@@ -162,7 +162,7 @@ func TestAll(t *testing.T) {
 			}
 
 			if len(cars) != 3 {
-				t.Fatalf("Three cars should have been returned from Sel(), but instead %d were\n", len(cars))
+				t.Fatalf("Three cars should have been returned from All(), but instead %d were\n", len(cars))
 			}
 
 			for i, car := range cars {
@@ -196,6 +196,61 @@ func TestAll(t *testing.T) {
 		}); err != nil {
 			log.Fatal(err)
 		}
+	})
+
+	t.Run("AllKeys", func(t *testing.T) {
+		// Start a read-write transaction.
+		if err := db.Update(func(tx *bolt.Tx) error {
+			carBucketName := "make-model"
+			golf := Car{"Volkswagon", "Golf"}
+			leaf := Car{"Nissan", "Leaf"}
+			hilux := Car{"Toyota", "Hilux"}
+
+			_ = PutJson(tx, carBucketName, "golf", &golf)
+			_ = PutJson(tx, carBucketName, "leaf", &leaf)
+			_ = PutJson(tx, carBucketName, "hilux", &hilux)
+
+			err, cars := AllKeys(tx, carBucketName)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if len(cars) != 3 {
+				t.Fatalf("Three cars should have been returned from AllKeys(), but instead %d were\n", len(cars))
+			}
+
+			return nil
+		}); err != nil {
+			log.Fatal(err)
+		}
+
+		check(err)
+	})
+
+	t.Run("AllKeys - non-existant bucket", func(t *testing.T) {
+		// view only
+		if err := db.View(func(tx *bolt.Tx) error {
+			carBucketName := "does-not-exist"
+
+			err, cars := AllKeys(tx, carBucketName)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if cars != nil {
+				t.Fatalf("Should have been returned a nil slice due to the bucket not existing\n")
+			}
+
+			if len(cars) != 0 {
+				t.Fatalf("No cars should have been returned from AllKeys(), but instead %d were\n", len(cars))
+			}
+
+			return nil
+		}); err != nil {
+			log.Fatal(err)
+		}
+
+		check(err)
 	})
 
 	t.Run("Delete", func(t *testing.T) {
