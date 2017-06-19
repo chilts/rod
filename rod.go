@@ -311,11 +311,11 @@ func All(tx *bolt.Tx, location string, to interface{}) error {
 }
 
 // AllKeys will return you a slice of strings of all of the keys in this bucket.
-func AllKeys(tx *bolt.Tx, location string) (error, []string) {
+func AllKeys(tx *bolt.Tx, location string) ([]string, error) {
 	// find this bucket
 	b, err := GetBucket(tx, location)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 	if b == nil {
 		return nil, nil
@@ -330,5 +330,5 @@ func AllKeys(tx *bolt.Tx, location string) (error, []string) {
 		keys = append(keys, string(k))
 	}
 
-	return nil, keys
+	return keys, nil
 }

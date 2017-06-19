@@ -210,7 +210,7 @@ func TestAll(t *testing.T) {
 			_ = PutJson(tx, carBucketName, "leaf", &leaf)
 			_ = PutJson(tx, carBucketName, "hilux", &hilux)
 
-			err, cars := AllKeys(tx, carBucketName)
+			cars, err := AllKeys(tx, carBucketName)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -232,7 +232,7 @@ func TestAll(t *testing.T) {
 		if err := db.View(func(tx *bolt.Tx) error {
 			carBucketName := "does-not-exist"
 
-			err, cars := AllKeys(tx, carBucketName)
+			cars, err := AllKeys(tx, carBucketName)
 			if err != nil {
 				log.Fatal(err)
 			}
